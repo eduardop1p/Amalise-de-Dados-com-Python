@@ -1,0 +1,76 @@
+#Extraindo Dodos do Brasileirão Serie A
+
+import pandas
+import numpy
+
+#Importando dados do arquivo csv que tá os dados do brasileirão
+dadoscsv = pandas.read_csv('D:/Desktop/zptltest/campeonato-brasileiro-full.csv')
+
+#Transformando os dados do arquivo csv para um DataFrame
+df = pandas.DataFrame(data=dadoscsv)
+
+#Tendo uma visão geral do DataFrame para uma analise mais completa
+v_g = df.info()
+print(v_g)
+print('\n')
+
+#Visualizando somente as primeiras 8 linhas do nosso DataFrame
+print(df.head(8)) #A contagem sempre vai começar do zero
+print('\n')
+
+#Localizando a linha 7880 e visualizando ela
+print(df[7880:7881])
+print('\n')
+#Obtendo os dados da linha 7880 como: Horário, Dia, Data, Times que jogaram, Rodada
+print(df.loc[[7880],['Horário','Dia','Data','Clube 1','Clube 2','Rodada']])
+print('\n')
+
+#Times com maiores números de gols
+#Primeiro vou tranformar a coluna 'Clube 1' toda em minuscula para não ter erro nos dados
+print('Times com maiores números de gols como mandante')
+df['Clube 1'] = df['Clube 1'].str.lower()
+total_gols = df.groupby('Clube 1')
+print(total_gols['Clube 1 Gols'].sum().sort_values(ascending=False))
+print('\n')
+
+#Total de gols no geral do brasileirão serie a
+a1 = df['Clube 1 Gols'].sum()
+a2 = df['Clube 2 Gols'].sum()
+soma = a1 + a2
+print('O Total de gols de todo o Brasileirão Serie A é de {} Gols.'.format(soma))
+print('\n')
+
+#A função a seguir vai me dizer quais foram os horários que mais tiveram jogos no campeonato brasileiro serie a
+print('Os horários que mais tiveram jogos foram: ')
+h1 = df['Horário'].value_counts().sort_values(ascending=False) #Função
+print(h1)
+print('\n')
+
+#Dias que mais tiveram jogos no brasileirão serie a
+print('Os dias que mais tiveram jogos foram:')
+d1 = df['Dia'].value_counts()
+print(d1)
+print('\n')
+
+#Time que mais empatou como mandante
+print('Os times que mais empatou como mandante foram:')
+df['Clube 1'] = df['Clube 1'].str.lower()
+print(df[df['Vencedor'] == '-']['Clube 1'].value_counts())
+print('\n')
+
+#Times que  mais empatou como visitante
+print('Os times que mais empatou como visitante foram:')
+df['Clube 2'] = df['Clube 2'].str.lower()
+print(df[df['Vencedor'] == '-']['Clube 2'].value_counts())
+print('\n')
+
+#Criando uma nova coluna para o DataFrame df que vai se chamar de 'Ano da Partida
+#Essa função ultilizar a função lambida
+df['Ano da Partica'] = df['Data'].apply(lambda data : data.split('-')[0])
+print(df)
+print('\n')
+
+#Os times que mais empataram como time mandante em 2019
+print('Os times que mais emopataram como times mandantes em 2019 foram:')
+m_d = df[(df['Vencedor'] == '-') & (df['Ano da Partica'] == '2019')]['Clube 1'].value_counts()
+print(m_d)
