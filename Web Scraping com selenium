@@ -1,0 +1,63 @@
+#Fazendo Web Scraping
+#Transformando código html em dados estruturados 
+#Retirando dados da Web com selenium
+#Transformando a tabela do Brasileirão Série A 2020/2021 em um DataFrame com pandas
+#Coletas de dados da tabela do Brasileirão Série A 2020/2021 com selenium webdriver
+
+
+import time
+from numpy import index_exp
+import pandas
+from pandas.core.indexes.base import Index
+from selenium import webdriver
+import selenium
+from bs4 import BeautifulSoup
+from selenium.webdriver.chrome.options import Options
+
+#1. Abrindo o site no navegador chrome com o selenium
+
+#função que é a url do site que queremos acessar, função logo abaixo
+url = 'https://www.google.com/search?sxsrf=ALeKk01R4Wqcpzf_vX1ehXulQrtE_TqVfA%3A1613760458965&source=hp&ei=ygcwYLSjOLm65OUP0Z-R8AM&iflsig=AINFCbYAAAAAYDAV2hyyDOkxJhY7p0b_KgqB197plswt&q=brasileir%C3%A3o&gs_ssp=eJzj4tTP1TdIy8s2LzRg9OJJKkoszsxJzSw6vDgfAGb4CQ8&oq=&gs_lcp=Cgdnd3Mtd2l6EAEYADIKCC4Q6gIQJxCTAjIHCCMQ6gIQJzIHCCMQ6gIQJzIHCC4Q6gIQJzIHCCMQ6gIQJzIHCCMQ6gIQJzIHCCMQ6gIQJzIHCCMQ6gIQJzIHCCMQ6gIQJzIHCCMQ6gIQJ1AAWABg3yVoAXAAeACAAQCIAQCSAQCYAQCqAQdnd3Mtd2l6sAEK&sclient=gws-wiz#sie=lg;/g/11fmzksb3y;2;/m/0fnk7q;st;fp;1;;'
+op = Options() #função que vai instanciar o chrome driver
+op.headless = True #função que vai fazer tudo correr de forma certa
+dv = webdriver.Chrome(executable_path='D:/Chrome driver automações/chromedriver') #função que vai abrir o navegador chrome cocm o selenium
+dv.get(url) #função que  vai acessar o site 
+
+#2. Selecionando a tabela que queremos do site
+
+time.sleep(5) #função que vai dá um tempo de 5 segundos para carregar os dados do site
+element = dv.find_element_by_xpath('//*[@id="liveresults-sports-immersive__league-fullpage"]/div/div[2]/div[2]/div/div/div/div[3]/div/div/div/div[2]/div/div/div/div/div/div[1]/div/table') #função que vai selecionar a tabela que queremos dentro do site
+code_html = element.get_attribute('outerHTML') #função que vai trazer todo o codigo html da variavel element que é a tabela 
+
+#3. Tratando ou mesmo estruturando os dados do site ou seja da tabela
+
+td = BeautifulSoup(code_html, 'html.parser') #função que vai tratar esse dados coletados da variavel code_html
+table = td.find(name='table') #função que vai estruturar esse dados coletados em uma tabela
+
+#4. Estruturando todos os dados coletados em um DataFrame com a famosa biblioteca pandas
+
+df = pandas.read_html(str(table))[0] #função que vai pegar os dados estruturados e transforma em um DataFrame, 
+#mas primero temos que torna a variavel tabela em uma string 'str' e depois selecionar o indice [0] que é lá que tá nossa tabela
+
+#5. Removendo nomes de colunas indesejados
+
+#função que irar excluir colunas, para excluir colunas axis= 1, para excluir linhas axis= 0,
+#o inplace= True quer dizer que quero que continue na mesma linha, para remover mais de 1 coluna repetir a função
+df.drop('Clube',axis= 1, inplace= True)
+df.drop('Unnamed: 0', axis= 1, inplace= True) 
+df.drop('Unnamed: 11', axis= 1, inplace= True)
+df.drop('Unnamed: 12', axis= 1, inplace= True)
+
+#6. Trocando nomes das colunas do DataFrame
+
+df.columns = ['Clubes','Pts','PJ','VIT','E','DER','GP','GC','SG'] #função que vai trocar o nome das colunas
+
+#7. Visualizando DataFrame
+
+print(('-=' * 5),'\033[1;32mTABELA DO BRASILEIRÃO SÉRIE A 2020/2021.\033[m',('-=' * 5))
+print('\n')  #função que vai pular uma linha, só por questão de organização
+print(df)
+
+#8. Saindo do navegador Chrome rapidamente
+
+dv.quit() #função que vai sair rapidamente do meu navegador chrome após concluir toda a ação
