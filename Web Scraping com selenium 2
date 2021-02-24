@@ -1,0 +1,98 @@
+#Coletando daados do site 'Coriona Tracker'
+#Analisando os dados do site acima
+#Web Scraping 
+#Coletando dados da web comm selenium webdriver
+#Analise de Dados
+
+#Bibliotecas de vamos ultilizar
+
+from matplotlib import pyplot
+import seaborn
+import selenium
+import pandas
+from bs4 import BeautifulSoup
+from selenium import  webdriver
+import numpy
+import time
+from selenium.webdriver.chrome.options import Options
+
+#Coletando os Dados da web
+
+
+url = 'https://www.coronatracker.com/pt-br/analytics'
+
+op = Options()
+op.headless = True
+dv = webdriver.Chrome(executable_path='D:/Chrome driver automações/chromedriver')
+dv.get(url)
+
+time.sleep(5)
+element = dv.find_element_by_xpath('//*[@id="__layout"]/div/div[3]/div[2]/div[2]/div[1]/div[2]/div[2]/table')
+html_code = element.get_attribute('outerHTML')
+
+td = BeautifulSoup(html_code, 'html.parser')
+tabela = td.find(name='table')
+
+df = pandas.read_html(str(tabela))[0]
+
+
+#Atlterando 'trocando' os pontos e virgulas das colunas e deixando os sem pontos e virgulas para valores int64
+
+df['Total Confirmados'] = df['Total Confirmados'].apply(lambda a: str(a).replace('.',''))
+df['Total Curados'] = df['Total Curados'].apply(lambda e: str(e).replace('.',''))
+df['Total Mortes'] = df['Total Mortes'].apply(lambda i: str(i).replace('.',''))
+
+#Alterando tipos de dados das colunas do DataFrame
+
+df['Total Confirmados'] = df['Total Confirmados'].astype('int64')
+df['Total Curados'] = df['Total Curados'].astype('int64')
+df['Total Mortes'] = df['Total Mortes'].astype('int64')
+print(df.info())
+
+#Visualizando o meu DataFrame 'df'
+
+print(('-=' * 10),'\033[1;31mTABELA DE DADOS DO CORONA VÍRUS NO MUNDO.\033[m',('-=' * 10))
+print('\n')
+print(df)
+print('\n')
+
+dv.quit()
+
+#Analisando os Dados coletados com o selenium web driver
+
+
+print(('-=' * 7),'\033[1;32mANALISANDO OS DADOS DA TABELA ACIMA\033[m',('-=' * 7))
+print('\n')
+
+
+print('''ESCOLHA UMA DAS OPÇÕES NO MENU LOGO ABAIXO PARA SABER MAIS DETALHES SOBRE O CORONA VÍRUS:
+[ 1 ] TOTAL CONFIRMADOS
+[ 2 ] TOTAL DE PESSOAS CURADAS
+[ 3 ] TOTAL DE MORTES''')
+op = int(input('QUAL OPÇÃO ACIMA VOÇÊ DESEJA SABER MAIS? '))
+if op == 1:
+
+    cof = df['Total Confirmados'].sum()
+    print('{} CASOS CONFIRMADOS NO MUNDO.'.format(cof))
+elif op == 2:
+    cur = df['Total Curados'].sum()
+    print('{} DE PESSOAS CURADAS NO MUNDO.'.format(cur))
+elif op == 3:
+    mort = df['Total Mortes'].sum()
+    print('{} MORTES NO MUNDO.'.format(mort))
+else:
+    print('OPÇÃO {} INVÁLIDA, TENTE UMA DAS OPÇÕES ACIMA.'.format(op))
+print('\n')
+
+#Visualizando os dados em graficos
+
+df2 = df.sort_values(by='Total Mortes',ascending= False).head(12).copy()
+palete_cor = seaborn.color_palette('rocket', 12)
+e_x = df2['País']
+e_y = df2['Total Mortes']
+seaborn.barplot(x= e_x, y= e_y, palette= palete_cor)
+pyplot.title('Distribuição de Mortes por Países')
+pyplot.xlabel('Por País')
+pyplot.ylabel('Mortes em milhares')
+pyplot.show()
+
